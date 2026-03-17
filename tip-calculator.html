@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tip Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .input-wrap span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: #aaa;
+      font-weight: 600;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px 12px 32px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a1a;
+    }
+
+    input[type="number"]:focus {
+      border-color: #4f46e5;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .tip-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .tip-btn {
+      flex: 1;
+      padding: 11px 0;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      background: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tip-btn:hover {
+      border-color: #4f46e5;
+      color: #4f46e5;
+    }
+
+    .tip-btn.selected {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+    }
+
+    .results {
+      background: #f8f7ff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-row .result-label {
+      font-size: 0.9rem;
+      color: #777;
+      font-weight: 500;
+    }
+
+    .result-row .result-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e8e6ff;
+    }
+
+    .result-row.total .result-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .result-row.total .result-value {
+      font-size: 1.3rem;
+      color: #4f46e5;
+    }
+
+    .placeholder {
+      text-align: center;
+      color: #ccc;
+      font-size: 0.9rem;
+      padding: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Tip Calculator</h1>
+
+    <label for="billInput">Bill Total</label>
+    <div class="input-wrap">
+      <span>$</span>
+      <input type="number" id="billInput" placeholder="0.00" min="0" step="0.01" oninput="calculate()" />
+    </div>
+
+    <label>Tip Percentage</label>
+    <div class="tip-options">
+      <button class="tip-btn" onclick="selectTip(10, this)">10%</button>
+      <button class="tip-btn" onclick="selectTip(15, this)">15%</button>
+      <button class="tip-btn" onclick="selectTip(20, this)">20%</button>
+    </div>
+
+    <div class="results" id="results">
+      <p class="placeholder">Enter a bill amount and select a tip.</p>
+    </div>
+  </div>
+
+  <script>
+    let selectedTip = null;
+
+    function selectTip(pct, btn) {
+      selectedTip = pct;
+      document.querySelectorAll('.tip-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      calculate();
+    }
+
+    function calculate() {
+      const bill = parseFloat(document.getElementById('billInput').value);
+      const results = document.getElementById('results');
+
+      if (!bill || bill <= 0 || selectedTip === null) {
+        results.innerHTML = '<p class="placeholder">Enter a bill amount and select a tip.</p>';
+        return;
+      }
+
+      const tip = bill * (selectedTip / 100);
+      const total = bill + tip;
+
+      results.innerHTML = `
+        <div class="result-row">
+          <span class="result-label">Bill</span>
+          <span class="result-value">${fmt(bill)}</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Tip (${selectedTip}%)</span>
+          <span class="result-value">${fmt(tip)}</span>
+        </div>
+        <hr class="divider" />
+        <div class="result-row total">
+          <span class="result-label">Total</span>
+          <span class="result-value">${fmt(total)}</span>
+        </div>
+      `;
+    }
+
+    function fmt(n) {
+      return '$' + n.toFixed(2);
+    }
+  </script>
+</body>
+</html>
